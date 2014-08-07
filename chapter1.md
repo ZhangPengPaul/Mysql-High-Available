@@ -25,3 +25,50 @@
 ###配置Master
 
 要将服务器配置为Master，要确保服务器有一个活动的二进制日志文件和一个唯一的服务器ID。二进制日志文件记录了Master上的所有改变，并且可以在Slave上重新执行。后面会详细介绍二进制日志文件，现在只需要知道以上的功能即可。服务器ID是用来区分服务器。要创建二进制日志文件和服务器ID，你需要停掉你的服务器，并按以下内容修改你的 *my.cnf* 配置文件。
+
+```
+[mysqld]
+user             = mysql
+pid-file         = /var/run/mysqld/mysql.pid
+socket           = /var/run/mysqld/mysql.sock
+port             = 3306
+basedir          = /usr
+datadir          = /var/lib/mysql
+tmpdir           = /tmp
+log-bin          = master-bin
+log-bin-index    = master-bin.index
+server-id        = 1
+```
+其中以下部分是添加的配置部分
+
+```
+log-bin          = master-bin
+log-bin-index    = master-bin.index
+server-id        = 1
+```
+
+###配置选项解释###
+
+log-bin
+: 二进制日志文件产生的所有文件的基本名（二进制日志文件包含了多个文件，稍后会介绍到）。
+
+log-bin-index
+: 二进制索引文件的文件名。索引文件中保存了所有binlog文件的列表。
+
+server-id
+: 每一个服务器都有一个唯一的ID，所以当一个Slave连接上了Master，并且它的server-id参数值是和Master相同，会产生Master和Slave服务器ID相同的错误。因此我们要保证每台服务器配置的server-id是唯一的。
+
+修改Master配置文件后，重启Master，使配置生效。
+
+###创建复制用户###
+
+最后我们需要在Master节点上新建一个复制用户，并赋以适当的权限。
+
+```
+master> CREATE USER repl_user;
+query OK, 0 rows affected (0.00 sec)
+master> GRANT REPLICATION SLAVE ON *.* TO repl_user IDENTIFIED BY 'password';
+query OK, 0 rows affected (0.00 sec)
+```
+
+经过以上的步骤，我们就完成了一个Master节点的配置。
