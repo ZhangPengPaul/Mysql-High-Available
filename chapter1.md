@@ -73,4 +73,6 @@ query OK, 0 rows affected (0.00 sec)
 
 经过以上的步骤，我们就完成了一个Master节点的配置。
 
-##Slave的配置##
+##配置Slave##
+
+未完待续。。。
