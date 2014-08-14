@@ -75,4 +75,20 @@ query OK, 0 rows affected (0.00 sec)
 
 ##配置Slave##
 
-未完待续。。。
+与Master一样，需要为每个Slave分配一个唯一的服务器ID。使用relay-log和relay-bin-log选项向 *my.cnf* 文件中添加relay log file（中继日志文件）和relay log index file（中继日志索引文件）的文件名。下面的配置为Slave的 *my.cnf* 文件片段。
+
+```
+[mysqld]
+user             = mysql
+pid-file         = /var/run/mysqld/mysql.pid
+socket           = /var/run/mysqld/mysql.sock
+port             = 3306
+basedir          = /usr
+datadir          = /var/lib/mysql
+tmpdir           = /tmp
+relay-log        = slave-relay-bin
+relay-log-index  = slave-relay-bin.index
+server-id        = 2
+```
+
+修改 *my.cnf* 文件后，重启Slave使配置生效。
