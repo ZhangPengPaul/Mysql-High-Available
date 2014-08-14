@@ -92,3 +92,33 @@ server-id        = 2
 ```
 
 修改 *my.cnf* 文件后，重启Slave使配置生效。
+
+##连接Master和Slave##
+
+这是创建基本的复制的最后一步，将Slave连接到Master，让Slave知道从哪进行复制。因此需要知道Master的4个信息：
+
+- 主机名/IP
+- 端口号
+- Master上有用REPLICATION SLAVE权限的账号
+- 该账号的密码
+
+最后我们可以使用两个命令来创建和使用复制，使用CHANGE MASTER TO命令将Slave指向Master，然后使用START SLAVE命令来启动复制。
+
+假设我们上面配置的Master的IP是192.168.1.100。
+
+```
+slave> CHANGE MASTER TO
+    ->    MASTER_HOST = '192.168.1.100',
+    ->    MASTER_PORT = '3306',
+    ->    MASTER_USER = 'repl_user',
+    ->    MASTER_PASSWORD = 'password';
+Query OK, 0 rows affected (0.00sec)
+slave> START SLAVE;
+Query OK, 0 rows affected (0.15sec)
+```
+
+恭喜！你已经创建了Master和Slave之间的第一个复制，现在可以尝试在Master的数据库上做一些变动，比如创建表并填充数据，将发现这些改变都会复制到Slave。
+
+##二进制日志简介##
+
+未完待续......
