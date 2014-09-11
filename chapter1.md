@@ -143,3 +143,62 @@ Mysql复制记录了产生变化的SQL语句，成为基于语句的复制（*st
 
 > 一个含有多表链接或者有着很复杂的``WHERE``查询条件的更新，你可能真正关心的是更新后每行的状态，而不是把所有的逻辑都在Slave上执行一遍。相反的，如果某个更新改变了N多行的记录，那么你宁可只记录这个语句，而不是去记录这N多个的单独改动。
 
+###复制的动作###
+
+我们使用前面建立的复制的例子来看一些简单语句的二进制日志事件，先用mysql client连接上Master，然后再通过一些命令来获取二进制日志内容：
+
+```
+master> CREATE TABLE test (text TEXT);
+Query OK, 0 rows affected (0.03sec)
+
+master> INSERT INTO test VALUES ("哈喽！我来测试复制！");
+Query OK, 1 row affected (0.00sec)
+
+master> SELECT * FROM test;
++----------------------+
+|text                  |
++----------------------+
+|哈喽！我来测试复制！     |
++----------------------+
+1 row in set (0.00sec)
+
+master> FLUSH LOGS;
+Query OK, 0 rows affected (0.24sec)
+
+```
+
+```FLUSH LOGS```命令强制轮转二进制日志，从而得到一个“完整”的二进制日志文件。使用```SHOW BINLOG EVENTS```命令查看该文件。
+
+```
+master> SHOW BINLOG EVENTS\G
+************************** 1.row ***************************
+   Log_name: master-bin.000001
+        Pos: 4
+ Event_type: Format_desc
+  Server_id: 1
+End_log_pos: 106
+       Info: Server ver: 5.5.24-log, Binlog ver: 4
+************************** 2.row ***************************
+   Log_name: master-bin.000001
+        Pos: 106
+ Event_type: Query
+  Server_id: 1
+End_log_pos: 197
+       Info: use `test`; CREATE TABLE test (text TEXT)
+************************** 3.row ***************************
+   Log_name: master-bin.000001
+        Pos: 197
+ Event_type: Query
+  Server_id: 1
+End_log_pos: 305
+       Info: use `test`; INSERT INTO test VALUES ("哈喽！我来测试复制！")
+************************** 4.row ***************************
+   Log_name: master-bin.000001
+        Pos: 305
+ Event_type: Rotate
+  Server_id: 1
+End_log_pos: 349
+       Info: master-bin.000002;pos=4
+4 rows in set (0.03 sec)
+```
+
